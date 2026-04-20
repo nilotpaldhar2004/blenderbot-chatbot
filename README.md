@@ -1,4 +1,23 @@
-# BlenderBot Conversational AI
+---
+license: mit
+language:
+- en
+base_model: facebook/blenderbot-400M-distill
+datasets:
+- blended_skill_talk
+pipeline_tag: text-generation
+tags:
+- blenderbot
+- conversational
+- chatbot
+- fine-tuned
+- pytorch
+metrics:
+- perplexity
+library_name: transformers
+---
+
+# BlenderBot Conversational Chatbot
 
 Fine-tuned `facebook/blenderbot-400M-distill` on the `blended_skill_talk` dataset for open-domain multi-turn conversation.
 
@@ -12,7 +31,7 @@ Fine-tuned `facebook/blenderbot-400M-distill` on the `blended_skill_talk` datase
 | Parameters | 364.8M |
 | Dataset | `blended_skill_talk` (Facebook AI Research) |
 | Architecture | Encoder-Decoder (seq2seq) |
-| Training metric | Perplexity (val PPL ~14) |
+| Best Val PPL | 14.16 |
 | Framework | PyTorch + HuggingFace Transformers |
 
 ---
@@ -21,7 +40,7 @@ Fine-tuned `facebook/blenderbot-400M-distill` on the `blended_skill_talk` datase
 
 BlenderBot was pre-trained on four datasets: 1.5B Reddit threads, ConvAI2 (PersonaChat), EmpatheticDialogues, and Wizard of Wikipedia. Unlike DialoGPT, it uses an encoder-decoder architecture that explicitly separates reading context from generating a response — this is why it handles multi-turn conversation much better.
 
-We fine-tune on `blended_skill_talk` because it is one of BlenderBot's own training sets, giving the best domain alignment.
+Fine-tuned on `blended_skill_talk` because it is one of BlenderBot's own training sets, giving the best domain alignment.
 
 ---
 
@@ -29,13 +48,51 @@ We fine-tune on `blended_skill_talk` because it is one of BlenderBot's own train
 
 | Epoch | Train Loss | Train PPL | Val Loss | Val PPL |
 |---|---|---|---|---|
-| 1 | 2.37 | 10.72 | 2.66 | **14.23** ← best |
-| 2 | 1.96 | 7.11 | 2.77 | 15.90 |
-| 3 | 1.58 | 4.83 | 2.95 | 19.12 |
+| 1 | 2.37 | 10.68 | 2.62 | **14.16** <- best |
+| 2 | 2.05 | 7.75 | 2.67 | 14.44 |
 
-Best checkpoint saved at epoch 1 (early stopping based on val loss).
+Best checkpoint saved at epoch 1. Early stopping triggered at epoch 2.
 
-**Metric used: Perplexity, not BLEU.** BLEU is misleading for chatbots because "How are you?" has hundreds of valid replies — BLEU would score most of them zero against a single reference.
+**Metric: Perplexity, not BLEU.** BLEU is misleading for chatbots — "How are you?" has hundreds of valid replies and BLEU would score most of them zero against a single reference. Perplexity measures how confident the model is on held-out data.
+
+---
+
+## Sample Responses
+
+```
+User : Hello! How are you doing today?
+Bot  : I'm doing well, how about yourself?
+
+User : I am feeling really stressed about work.
+Bot  : I'm sorry to hear that. What's going on?
+
+User : I just got promoted at my job!
+Bot  : Congratulations! What do you do for a living?
+
+User : Do you have any advice for staying healthy?
+Bot  : I try to eat as healthy as I can and stay active.
+```
+
+---
+
+## Usage
+
+```python
+from transformers import BlenderbotTokenizer, BlenderbotForConditionalGeneration
+
+tokenizer = BlenderbotTokenizer.from_pretrained("nilotpaldhar2004/blenderbot-chatbot")
+model     = BlenderbotForConditionalGeneration.from_pretrained("nilotpaldhar2004/blenderbot-chatbot")
+
+inputs = tokenizer("Hello! How are you?", return_tensors="pt")
+output = model.generate(
+    **inputs,
+    max_new_tokens=60,
+    num_beams=2,
+    no_repeat_ngram_size=3,
+    early_stopping=True,
+)
+print(tokenizer.decode(output[0], skip_special_tokens=True))
+```
 
 ---
 
@@ -43,105 +100,60 @@ Best checkpoint saved at epoch 1 (early stopping based on val loss).
 
 ```
 blenderbot-chatbot/
-  blenderbot_final.ipynb   Training notebook (run on Kaggle GPU)
   main.py                  FastAPI server
-  index.html               Chat UI (served by FastAPI)
+  index.html               Chat UI
   requirements.txt         Python dependencies
+  Dockerfile               HuggingFace Spaces deployment
   README.md                This file
-  blenderbot_finetuned/    Trained model weights (download from Kaggle output)
-    config.json
-    pytorch_model.bin
-    tokenizer_config.json
-    vocab.json
-    merges.txt
-    generation_config.json
+  blenderbot_final.ipynb   Training notebook (Kaggle GPU)
+  .github/workflows/
+    deploy.yml             Auto-deploy to HF Spaces on git push
 ```
 
 ---
 
-## Run Locally
+## Deployment
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/your-username/blenderbot-chatbot.git
-cd blenderbot-chatbot
+Hosted on HuggingFace Spaces (Docker SDK, free CPU tier).  
+Model weights loaded from HuggingFace Model Hub at startup.
 
-# 2. Unzip the model (downloaded from Kaggle output tab)
-unzip blenderbot_finetuned.zip
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Start the server
-uvicorn main:app --host 0.0.0.0 --port 8000
-
-# 5. Open the chat UI
-# Go to http://localhost:8000 in your browser
+```
+Space  : https://huggingface.co/spaces/nilotpaldhar2004/blenderbot-chatbot
+Model  : https://huggingface.co/nilotpaldhar2004/blenderbot-chatbot
 ```
 
 ---
 
-## API Usage
+## API
 
-**Single-turn:**
 ```bash
-curl -X POST http://localhost:8000/chat \
+# Health check
+curl https://nilotpaldhar2004-blenderbot-chatbot.hf.space/health
+
+# Single-turn
+curl -X POST https://nilotpaldhar2004-blenderbot-chatbot.hf.space/chat \
   -H "Content-Type: application/json" \
-  -d '{"message": "Hello! How are you?"}'
-```
+  -d '{"message": "Hello!"}'
 
-**Multi-turn (pass history):**
-```bash
-curl -X POST http://localhost:8000/chat \
+# Multi-turn
+curl -X POST https://nilotpaldhar2004-blenderbot-chatbot.hf.space/chat \
   -H "Content-Type: application/json" \
-  -d '{
-    "message": "What skills do I need?",
-    "history": ["I want to work in AI.", "That is a great goal!"]
-  }'
-```
-
-**Health check:**
-```bash
-curl http://localhost:8000/health
-```
-
----
-
-## Deploy on HuggingFace Spaces (Free, Public URL)
-
-1. Create a new Space at https://huggingface.co/spaces
-2. Select **FastAPI** as the SDK
-3. Upload all files from this repo
-4. Upload the `blenderbot_finetuned/` folder (or push via `huggingface_hub`)
-5. HuggingFace Spaces gives you a free public URL with GPU option
-
----
-
-## Deploy on Railway / Render
-
-```bash
-# Railway
-railway init
-railway up
-
-# Render: connect GitHub repo, set start command:
-# uvicorn main:app --host 0.0.0.0 --port $PORT
+  -d '{"message": "What skills do I need?", "history": ["I want to work in AI.", "That is a great goal!"]}'
 ```
 
 ---
 
 ## Overfitting Fixes Applied
 
-The model showed clear overfitting (train PPL dropped fast while val PPL rose). Fixes:
-
-- **LR reduced** from 5e-5 to 3e-5 — smaller updates, less memorisation
-- **Epochs reduced** from 4 to 3 — stop training before val loss climbs
-- **Samples reduced** from 40K to 20K — smaller set is harder to memorise
-- **Label smoothing 0.1** — prevents model from being overconfident on training targets
-- **Warmup increased** from 6% to 10% — more stable start with pretrained weights
+- LR reduced from 5e-5 to 2e-5
+- Early stopping with patience=2
+- Warmup increased to 15% of total steps
+- Effective batch size 64 (8 x grad_accum 8)
 
 ---
 
 ## Author
 
-Nilotpal — CS student, AI/ML enthusiast
+**Nilotpal** — CS student, AI/ML enthusiast  
+GitHub: [nilotpaldhar2004](https://github.com/nilotpaldhar2004)  
+HuggingFace: [nilotpaldhar2004](https://huggingface.co/nilotpaldhar2004)
