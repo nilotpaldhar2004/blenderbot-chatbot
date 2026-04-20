@@ -41,7 +41,7 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="."), name="static")
 
 # ── Config ────────────────────────────────────────────────────────────────────
-MODEL_DIR      = "./blenderbot_finetuned"   # unzipped model folder
+MODEL_DIR      = "nilotpaldhar2004/blenderbot-chatbot"   
 DEVICE         = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 SEP            = "  "                        # BlenderBot's conversation separator (double space)
 MAX_CTX_LEN    = 128
