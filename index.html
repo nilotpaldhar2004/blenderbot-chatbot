@@ -138,13 +138,21 @@
     #clear-btn:hover { background: #e8eaed; }
 
     /* Mobile */
+    /* Mobile */
     @media (max-width: 480px) {
-      body { padding: 0; align-items: stretch; }
+      body { 
+        padding: 0; 
+        overflow: hidden; /* Stops the entire page from scrolling */
+      }
 
       .container {
+        position: fixed; /* Locks the app to the visible screen */
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: auto; /* Overrides the previous 100dvh */
         border-radius: 0;
-        height: 100vh;
-        height: 100dvh; /* key fix -- adjusts when keyboard opens */
         max-width: 100%;
       }
 
