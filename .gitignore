@@ -1,0 +1,22 @@
+# Model weights (too large for git — download from Kaggle output)
+blenderbot_finetuned/
+*.bin
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+.venv/
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
