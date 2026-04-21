@@ -18,7 +18,8 @@ library_name: transformers
 ---
  
 <div align="center">
-# 🤖 BlenderBot Conversational AI
+ 
+# BlenderBot Conversational AI
  
 **Fine-tuned `facebook/blenderbot-400M-distill` for open-domain multi-turn conversation**
  
@@ -216,6 +217,7 @@ blenderbot-chatbot/
 ## 👤 Author
  
 <div align="center">
+ 
 **Nilotpal Dhar** — CS student, AI/ML enthusiast
  
 [![GitHub](https://img.shields.io/badge/GitHub-nilotpaldhar2004-black?style=flat&logo=github)](https://github.com/nilotpaldhar2004)
