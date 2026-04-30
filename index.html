@@ -197,11 +197,25 @@
       border: 1px solid var(--border);
     }
 
+    /* ── [CHANGE 1] Error bubble — red left border + tinted bg ── */
+    .bot .bubble.error {
+      border-left: 3px solid var(--danger);
+      background: rgba(224, 92, 92, 0.07);
+      color: #f0a8a8;
+    }
+
     .msg-time {
       font-size: 0.65rem;
-      color: var(--text-faint);
-      padding: 0 4px;
+      color: var(--text-muted);
+      padding: 2px 6px;
       font-family: var(--mono);
+      background: rgba(255,255,255,0.06);
+      border-radius: 4px;
+    }
+
+    .user .msg-time {
+      color: rgba(15,17,23,0.65);
+      background: rgba(0,0,0,0.12);
     }
 
     /* Typing indicator */
@@ -463,20 +477,26 @@
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
-  input.addEventListener("focus", () => {
-    setTimeout(() => chatWin.scrollTop = chatWin.scrollHeight, 300);
-  });
+  // ── [CHANGE 2] visualViewport scroll fix — replaces brittle 300ms setTimeout ──
+  // Fires whenever the visible viewport resizes (i.e. soft keyboard open/close on Android/iOS).
+  // Scrolls chat to bottom so the last message stays visible above the keyboard.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", () => {
+      chatWin.scrollTop = chatWin.scrollHeight;
+    });
+  }
 
   function now() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
-  function addMsg(text, role) {
+  // isError flag → adds .error class to bubble for red-border styling
+  function addMsg(text, role, isError = false) {
     const group = document.createElement("div");
     group.className = `msg-group ${role}`;
 
     const bubble = document.createElement("div");
-    bubble.className = "bubble";
+    bubble.className = "bubble" + (isError ? " error" : "");
     bubble.textContent = text;
 
     const time = document.createElement("span");
@@ -527,7 +547,8 @@
 
     } catch (err) {
       typing.remove();
-      addMsg("Something went wrong. Please try again.", "bot");
+      // ── [CHANGE 1 usage] pass isError=true → red-border bubble ──
+      addMsg("Something went wrong. Please try again.", "bot", true);
       console.error(err);
     }
 
