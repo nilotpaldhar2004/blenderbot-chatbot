@@ -48,13 +48,13 @@
       grid-template-rows: 1fr;
       place-items: center;
       min-height: 100dvh;
-      padding: 20px;
+      padding: 24px 32px;
     }
 
     .shell {
       width: 100%;
-      max-width: 860px;
-      height: 90dvh;
+      max-width: 980px;
+      height: calc(100dvh - 48px);
       min-height: 520px;
       display: flex;
       flex-direction: column;
@@ -383,9 +383,16 @@
       .msg-group { max-width: 80%; }
     }
 
-    /* ── Full Desktop ── */
-    @media (min-width: 1200px) {
-      .shell { max-width: 900px; height: 85dvh; }
+    /* ── Laptop (1024–1439px) ── */
+    @media (min-width: 1024px) and (max-width: 1439px) {
+      body { padding: 20px 28px; }
+      .shell { max-width: 100%; height: calc(100dvh - 40px); border-radius: 18px; }
+    }
+
+    /* ── Full Desktop 1440px+ ── */
+    @media (min-width: 1440px) {
+      body { padding: 28px 60px; }
+      .shell { max-width: 1100px; height: calc(100dvh - 56px); }
     }
   </style>
 </head>
