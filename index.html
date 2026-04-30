@@ -381,6 +381,13 @@
 
     .btn-clear:hover { color: var(--danger); background: rgba(224,92,92,0.08); }
 
+    .powered-by {
+      font-size: 0.65rem;
+      font-family: var(--mono);
+      color: var(--text-faint);
+      letter-spacing: 0.03em;
+    }
+
     /* ── Mobile ── */
     @media (max-width: 480px) {
       html, body {
@@ -470,6 +477,7 @@
     </div>
     <div class="input-footer">
       <span>Press Enter to send</span>
+      <span class="powered-by">Powered by BlenderBot 400M &amp; FastAPI</span>
       <button class="btn-clear" onclick="clearChat()">Clear chat</button>
     </div>
   </div>
