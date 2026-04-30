@@ -214,6 +214,27 @@
       display: inline-block;
     }
 
+    /* ── User avatar in chat ── */
+    .user-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .user-avatar-sm {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: var(--user-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+      box-shadow: 0 0 0 2px rgba(245,166,35,0.25);
+    }
+
     /* Typing indicator */
     .typing-group {
       display: flex;
@@ -416,7 +437,7 @@
       <div class="avatar">🤖</div>
       <div class="header-info">
         <h1>Conversational AI</h1>
-        <p><span class="status-dot"></span>Built by Nilotpal Dhar · NLP Engineer</p>
+        <p><span class="status-dot"></span>Built by Nilotpal Dhar · NLP &amp; Deep Learning Engineer</p>
       </div>
     </div>
     <div class="header-right">
@@ -499,7 +520,20 @@
     time.className = "msg-time";
     time.textContent = now();
 
-    group.appendChild(bubble);
+    if (role === "user") {
+      // Bubble + avatar side by side
+      const row = document.createElement("div");
+      row.className = "user-row";
+      row.appendChild(bubble);
+      const av = document.createElement("div");
+      av.className = "user-avatar-sm";
+      av.textContent = "👤";
+      row.appendChild(av);
+      group.appendChild(row);
+    } else {
+      group.appendChild(bubble);
+    }
+
     group.appendChild(time);
     chatWin.appendChild(group);
     chatWin.scrollTop = chatWin.scrollHeight;
